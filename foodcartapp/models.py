@@ -143,7 +143,7 @@ class Order(models.Model):
     )
 
     def __str__(self):
-        return f'{self.surname} {self.name} - {self.phone}({self.address})'
+        return f'{self.pk}. {self.surname} {self.name} - {self.phone}({self.address})'
 
 
 class OrderContent(models.Model):

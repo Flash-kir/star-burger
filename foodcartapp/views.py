@@ -1,7 +1,6 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
-import json
-
+from rest_framework.decorators import api_view
 
 from .models import Product
 from .models import Order
@@ -60,9 +59,10 @@ def product_list_api(request):
     })
 
 
+@api_view(['POST'])
 def register_order(request):
-    print(json.loads(request.body.decode()))
-    order_query_content = json.loads(request.body.decode())
+    print(request.data)
+    order_query_content = request.data
     order = Order(
         name=order_query_content['firstname'],
         surname=order_query_content['lastname'],

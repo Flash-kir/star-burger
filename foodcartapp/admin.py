@@ -25,6 +25,7 @@ class OrderAdmin(admin.ModelAdmin):
         'phone'
     ]
     list_display = [
+        'pk',
         'name',
         'surname',
         'address',
