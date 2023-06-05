@@ -8,6 +8,8 @@ from .models import Product
 from .models import Order
 from .models import OrderContent
 
+from .validators import order_fields_validate
+
 
 def banners_list_api(request):
     # FIXME move data to db?
@@ -66,19 +68,18 @@ def register_order(request):
     print(request.data)
     order_query_content = request.data
 
-    content = {}
+    validate_fields = [
+        ['products', list],
+        ['address', str],
+        ['firstname', str],
+        ['lastname', str],
+        ['phonenumber', str]
+    ]
 
-    if 'products' not in order_query_content.keys():
-        content = {'error': 'products: Обязательное поле.'}
-    elif order_query_content['products'] is None:
-        content = {'error': 'products: Это поле не может быть пустым.'}
-    elif not isinstance(order_query_content['products'], list):
-        content = {'error': 'products: Ожидался list со значениями, но был получен "str".'}
-    elif len(order_query_content['products']) == 0:
-        content = {'error': 'products: Этот список не может быть пустым.'}
+    errors = order_fields_validate(order_query_content, validate_fields)
 
-    if content:
-        return Response(content, status=status.HTTP_200_OK)
+    if errors['errors'].keys():
+        return Response(errors, status=status.HTTP_200_OK)
 
     order = Order(
         name=order_query_content['firstname'],
