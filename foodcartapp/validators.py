@@ -1,104 +1,59 @@
-from .models import Product
+from django.core.validators import RegexValidator
+
+from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import Serializer, ValidationError
+from rest_framework.serializers import CharField, ListField, IntegerField
+
+from .models import Product, Order, OrderContent
 
 
-def validate_order_product(content_dict, form_field, errors):
-    if form_field not in content_dict.keys():
-        errors['required'].append(str(content_dict[form_field]))
-    elif content_dict[form_field] is None or content_dict[form_field] == 0:
-        errors['empty'].append(str(content_dict[form_field]))
-    elif not isinstance(content_dict[form_field], int):
-        content_type = type(content_dict[form_field])
-        error_text = f'{form_field}: Ожидался {int} со значениями, но был получен {content_type}. '
-        errors['type'] += error_text
-    elif not content_dict[form_field] > 0:
-        error_text = f'{form_field}: Значение поля не может быть отрицательным. '
-        errors['type'] += error_text
-    return errors
+class OrderContentSerializer(ModelSerializer):
+    product = IntegerField(source="OrderContent.item")
+    quantity = IntegerField(
+        source="OrderContent.quantity",
+        min_value=1,
+    )
+
+    class Meta():
+        model = OrderContent
+        fields = ('id', 'product', 'quantity')
+
+    def validate_product(self, product_id):
+        data = Product.objects.filter(id=product_id).first()
+        if not data:
+            raise ValidationError("Продукт не существует.")
+        return data.pk
 
 
-def validate_phonenumber(num):
-    pass
+class OrderSerializer(ModelSerializer):
+    firstname = CharField(source="Order.name")
+    lastname = CharField(source="Order.surname")
+    address = CharField(source="Order.address")
+    phonenumber = CharField(
+        source="Order.phone",
+        max_length=17,
+        validators=[
+            RegexValidator(
+                regex=r'^((\+?7|8)[ \-.]?)?((\([1-9][0-9]{2}\))|([1-9][0-9]{2}))?([ \-.])?(\d{3}[\- .]?\d{2}[\- .]?\d{2})$',
+                message="Phone number must be entered in the format '+71234567890'. Up to 13 digits allowed."
+            ),
+        ],
+    )
+    products = ListField(
+        child=OrderContentSerializer(),
+        min_length=1,
+        allow_empty=False
+    )
 
+    class Meta:
+        model = Order
+        fields = ('id', 'firstname', 'lastname', 'address', 'phonenumber', 'products')
 
-def validate_form_field(content_dict, form_field, data_type, errors):
-    error_text = ''
-
-    if form_field not in content_dict.keys():
-        errors['required'].append(form_field)
-    elif content_dict[form_field] is None:
-        errors['empty'].append(form_field)
-    elif not isinstance(content_dict[form_field], data_type):
-        content_type = type(content_dict[form_field])
-        error_text = f'{form_field}: Ожидался {data_type} со значениями, но был получен {content_type}. '
-        errors['type'] += error_text
-    elif len(content_dict[form_field]) == 0:
-        if form_field == 'products':
-            error_text = 'products: Этот список не может быть пустым.'
-            errors['empty_products'] = error_text
-        else:
-            errors['empty'].append(form_field)
-    elif form_field == 'products':
-        for product in content_dict['products']:
-            errors = validate_order_product(product, 'product', errors)
-            errors = validate_order_product(product, 'quantity', errors)
-            if not Product.objects.filter(pk=product['product']):
-                errors['wrong_products'].append(str(product['product']))
-    elif form_field == 'phonenumber':
-        number = content_dict[form_field]
-        if (len(number) == 11 and number[0:2] == '89') or (len(number) == 12 and number[0:3] == '+79'):
-            pass
-        else:
-            errors['wrong_number'] = 'Некорректный номер телефона'
-    return errors
-
-
-def parse_errors_dict(errors_dict):
-    errors = {}
-    if errors_dict['required']:
-        fields = ', '.join(errors_dict['required'])
-        if len(errors_dict['required']) == 1:
-            required = fields + ': Обязательное поле.'
-        else:
-            required = fields + ': Обязательные поля.'
-        errors['required fields error'] = required
-    if errors_dict['empty']:
-        fields = ', '.join(errors_dict['empty'])
-        if len(errors_dict['empty']) == 1:
-            empty = fields + ': Это поле не может быть пустым.'
-        else:
-            empty = fields + ': Эти поля не могут быть пустыми.'
-        errors['empty fields error'] = empty
-    if errors_dict['type']:
-        errors['type field error'] = errors_dict['type']
-    if errors_dict['empty_products']:
-        errors['empty products list error'] = errors_dict['empty_products']
-    if errors_dict['wrong_products']:
-        products = ', '.join(errors_dict['wrong_products'])
-        if len(errors_dict['wrong_products']) == 1:
-            wrong = 'Продукт с этим ключём не найден: ' + products + '.'
-        else:
-            wrong = 'Продукты с этими ключами не найдены: ' + products + '.'
-        errors['wrong products error'] = wrong
-    if errors_dict['wrong_number']:
-        errors['wrong phone error'] = errors_dict['wrong_number']
-    return {
-        'errors': errors
-    }
-
-
-def order_fields_validate(content_dict, fields):
-    errors_dict = {
-                'required': [],
-                'empty': [],
-                'type': '',
-                'empty_products': '',
-                'wrong_products': [],
-                'wrong_number': '',
-            }
-
-    for field, data_type in fields:
-        errors_dict = validate_form_field(content_dict, field, data_type, errors_dict)
-
-    errors = parse_errors_dict(errors_dict)
-
-    return errors
+    def to_representation(self, instance):
+        ret = super(OrderSerializer, self).to_representation(instance)
+        # check the request is list view or detail view
+        print(self)
+        is_list_view = isinstance(self.instance, list)
+        extra_ret = {'key': 'list value'} if is_list_view else {'key': 'single value'}
+        ret.update(extra_ret)
+        return ret

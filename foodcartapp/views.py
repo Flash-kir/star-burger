@@ -1,14 +1,18 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
+
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.serializers import ValidationError
+from rest_framework.renderers import JSONRenderer
 
 from .models import Product
 from .models import Order
 from .models import OrderContent
 
-from .validators import order_fields_validate
+from .validators import OrderSerializer
+from .validators import OrderContentSerializer
 
 
 def banners_list_api(request):
@@ -65,34 +69,33 @@ def product_list_api(request):
 
 @api_view(['POST'])
 def register_order(request):
-    print(request.data)
-    order_query_content = request.data
+    serializer = OrderSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
 
-    validate_fields = [
-        ['products', list],
-        ['address', str],
-        ['firstname', str],
-        ['lastname', str],
-        ['phonenumber', str]
-    ]
+    products = request.data.get('products', [])
+    if not isinstance(products, list):
+        raise ValidationError('Expects products field be a list')
 
-    errors = order_fields_validate(order_query_content, validate_fields)
+    for items in products:
+        serializer_products = OrderContentSerializer(data=items)
+        serializer_products.is_valid(raise_exception=True)
 
-    if errors['errors'].keys():
-        return Response(errors, status=status.HTTP_200_OK)
+    order_query_content = serializer.validated_data
 
     order = Order(
-        name=order_query_content['firstname'],
-        surname=order_query_content['lastname'],
-        address=order_query_content['address'],
-        phone=order_query_content['phonenumber']
+        name=order_query_content['Order']['name'],
+        surname=order_query_content['Order']['surname'],
+        address=order_query_content['Order']['address'],
+        phone=order_query_content['Order']['phone']
     )
     order.save()
+
     for item in order_query_content['products']:
         ordercontent = OrderContent(
             order=order,
-            item=Product.objects.get(pk=item['product']),
-            quantity=item['quantity']
+            item=Product.objects.get(pk=item['OrderContent']['item']),
+            quantity=item['OrderContent']['quantity']
         )
         ordercontent.save()
-    return JsonResponse({})
+
+    return Response(serializer.validated_data)
