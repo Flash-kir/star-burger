@@ -1,5 +1,6 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
+from django.db import transaction
 
 from rest_framework.decorators import api_view
 from rest_framework import status
@@ -82,22 +83,27 @@ def register_order(request):
 
     order_query_content = serializer.validated_data
 
-    order = Order(
-        name=order_query_content['Order']['name'],
-        surname=order_query_content['Order']['surname'],
-        address=order_query_content['Order']['address'],
-        phone=order_query_content['Order']['phone']
-    )
-    order.save()
+    with transaction.atomic():
+        try:
+            order = Order(
+                name=order_query_content['Order']['name'],
+                surname=order_query_content['Order']['surname'],
+                address=order_query_content['Order']['address'],
+                phone=order_query_content['Order']['phone']
+            )
+            order.save()
 
-    for item in order_query_content['products']:
-        ordercontent = OrderContent(
-            order=order,
-            item=Product.objects.get(pk=item['OrderContent']['item']),
-            quantity=item['OrderContent']['quantity']
-        )
-        ordercontent.save()
+            for item in order_query_content['products']:
+                ordercontent = OrderContent(
+                    order=order,
+                    item=Product.objects.get(pk=item['OrderContent']['item']),
+                    quantity=item['OrderContent']['quantity']
+                )
+                ordercontent.save()
 
-        ordercontent.calculate_price()
+                ordercontent.calculate_price()
+        except Exception:
+            if order:
+                order.delete()
 
     return Response(serializer.validated_data)
