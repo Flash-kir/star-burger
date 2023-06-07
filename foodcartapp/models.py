@@ -143,24 +143,9 @@ class Order(models.Model):
         verbose_name='адрес',
         max_length=200
     )
-    total = models.DecimalField(
-        'цена',
-        max_digits=10,
-        decimal_places=2,
-        validators=[MinValueValidator(0)],
-        default=0
-    )
 
     def __str__(self):
         return f'{self.pk}. {self.surname} {self.name} - {self.phone}({self.address})'
-
-    def calculate_total(self):
-        total = 0
-        for item in self.items.all():
-            total += item.item.price * item.quantity
-        self.total = total
-        self.save()
-        return total
 
 
 class OrderContent(models.Model):
@@ -180,7 +165,15 @@ class OrderContent(models.Model):
     quantity = models.IntegerField(
         verbose_name='количество'
     )
+    price = models.DecimalField(
+        'цена',
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        default=0,
+    )
 
-    @property
-    def price(self):
-        return self.item.price * self.quantity
+    def calculate_price(self):
+        self.price = self.item.price
+        self.save()
+        return self.price
