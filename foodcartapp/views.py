@@ -98,4 +98,6 @@ def register_order(request):
         )
         ordercontent.save()
 
+    order.calculate_total()
+
     return Response(serializer.validated_data)
