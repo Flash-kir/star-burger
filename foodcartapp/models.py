@@ -126,6 +126,16 @@ class RestaurantMenuItem(models.Model):
 
 
 class Order(models.Model):
+    NEW = 'N'
+    COOK = 'C'
+    DELIVERY = 'D'
+    READY = 'R'
+    ORDER_STATUS = (
+        ('N', 'Необработанный'),
+        ('C', 'Готовится'),
+        ('D', 'Передан в доставку'),
+        ('R', 'Выполнен'),
+    )
     name = models.CharField(
         verbose_name='имя',
         max_length=50
@@ -143,6 +153,18 @@ class Order(models.Model):
         verbose_name='адрес',
         max_length=200
     )
+    status = models.CharField(
+        max_length=2,
+        choices=ORDER_STATUS,
+        default=NEW,
+        db_index=True,
+    )
+
+    def get_order_status_display(self):
+        for status in self.ORDER_STATUS:
+            if self.status == status[0]:
+                return status[1]
+        return ''
 
     def __str__(self):
         return f'{self.pk}. {self.surname} {self.name} - {self.phone}({self.address})'

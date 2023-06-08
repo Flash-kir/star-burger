@@ -36,7 +36,6 @@ class OrderAdmin(admin.ModelAdmin):
     ]
 
     def response_change(self, request, obj):
-        print(request.GET.get('next'))
         if request.GET.get('next'):
             return redirect(request.GET.get('next'))
         else:
