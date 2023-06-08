@@ -1,3 +1,7 @@
+import datetime
+
+from django.utils import timezone
+
 from django.db import models
 from django.core.validators import MinValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
@@ -163,6 +167,18 @@ class Order(models.Model):
         max_length=300,
         blank=True,
         default=''
+    )
+    registrated_at = models.DateTimeField(
+        default=timezone.now,
+        blank=True,
+    )
+    called_at = models.DateTimeField(
+        blank=True,
+        null=True,
+    )
+    delivered_at = models.DateTimeField(
+        blank=True,
+        null=True,
     )
 
     def get_order_status_display(self):
