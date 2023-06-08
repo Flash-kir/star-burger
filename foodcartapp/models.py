@@ -159,6 +159,11 @@ class Order(models.Model):
         default=NEW,
         db_index=True,
     )
+    comment = models.TextField(
+        max_length=300,
+        blank=True,
+        default=''
+    )
 
     def get_order_status_display(self):
         for status in self.ORDER_STATUS:
