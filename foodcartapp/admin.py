@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.shortcuts import reverse
+from django.shortcuts import reverse, redirect
 from django.templatetags.static import static
 from django.utils.html import format_html
 
@@ -34,6 +34,13 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [
         OrderContentInline
     ]
+
+    def response_change(self, request, obj):
+        print(request.GET.get('next'))
+        if request.GET.get('next'):
+            return redirect(request.GET.get('next'))
+        else:
+            return super().response_change(request, obj)
 
 
 @admin.register(OrderContent)
