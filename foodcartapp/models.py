@@ -152,48 +152,54 @@ class Order(models.Model):
     )
     surname = models.CharField(
         verbose_name='отчество',
-        max_length=50
+        max_length=50,
     )
     phone = PhoneNumberField(
         region="RU",
         db_index=True,
-        verbose_name='телефон'
+        verbose_name='телефон',
     )
     address = models.CharField(
         verbose_name='адрес',
-        max_length=200
+        max_length=200,
     )
     status = models.CharField(
         max_length=2,
         choices=ORDER_STATUS,
         default=NEW,
         db_index=True,
+        verbose_name='статус заказа',
     )
     payment_method = models.CharField(
         max_length=2,
         choices=PAYMENT_METHODS,
         default=CASH,
         db_index=True,
+        verbose_name='метод оплаты',
     )
     comment = models.TextField(
         max_length=300,
         blank=True,
-        default=''
+        default='',
+        verbose_name='комментарий',
     )
     registrated_at = models.DateTimeField(
         default=timezone.now,
         blank=True,
         db_index=True,
+        verbose_name='время регистрации',
     )
     called_at = models.DateTimeField(
         blank=True,
         null=True,
         db_index=True,
+        verbose_name='время обзвона',
     )
     delivered_at = models.DateTimeField(
         blank=True,
         null=True,
         db_index=True,
+        verbose_name='время доставки',
     )
 
     def get_payment_method_display(self):
