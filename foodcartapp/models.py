@@ -140,6 +140,12 @@ class Order(models.Model):
         ('D', 'Передан в доставку'),
         ('R', 'Выполнен'),
     )
+    CASH = 'C'
+    ELECTRONIC = 'E'
+    PAYMENT_METHODS = (
+        ('C', 'Наличные'),
+        ('E', 'Электронно'),
+    )
     name = models.CharField(
         verbose_name='имя',
         max_length=50
@@ -163,6 +169,12 @@ class Order(models.Model):
         default=NEW,
         db_index=True,
     )
+    payment_method = models.CharField(
+        max_length=2,
+        choices=PAYMENT_METHODS,
+        default=CASH,
+        db_index=True,
+    )
     comment = models.TextField(
         max_length=300,
         blank=True,
@@ -183,6 +195,12 @@ class Order(models.Model):
         null=True,
         db_index=True,
     )
+
+    def get_payment_method_display(self):
+        for method in self.PAYMENT_METHODS:
+            if self.payment_method == method[0]:
+                return method[1]
+        return ''
 
     def get_order_status_display(self):
         for status in self.ORDER_STATUS:
