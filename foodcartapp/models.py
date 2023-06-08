@@ -171,14 +171,17 @@ class Order(models.Model):
     registrated_at = models.DateTimeField(
         default=timezone.now,
         blank=True,
+        db_index=True,
     )
     called_at = models.DateTimeField(
         blank=True,
         null=True,
+        db_index=True,
     )
     delivered_at = models.DateTimeField(
         blank=True,
         null=True,
+        db_index=True,
     )
 
     def get_order_status_display(self):
