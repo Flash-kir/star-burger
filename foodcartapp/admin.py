@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.shortcuts import reverse, redirect
 from django.templatetags.static import static
 from django.utils.html import format_html
+from django.utils import timezone
 
 from .models import Product
 from .models import ProductCategory
@@ -40,6 +41,17 @@ class OrderAdmin(admin.ModelAdmin):
             return redirect(request.GET.get('next'))
         else:
             return super().response_change(request, obj)
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(OrderAdmin, self).get_form(request, obj, **kwargs)
+        form.base_fields['restaurant'].queryset = Restaurant.objects.filter(pk__in=obj.restaurants_possibility_make_order())
+        return form
+
+    def save_model(self, request, obj, form, change):
+        if obj.restaurant and obj.status == obj.NEW:
+            obj.status = obj.COOK
+            obj.called_at = timezone.now()
+        return super().save_model(request, obj, form, change)
 
 
 @admin.register(OrderContent)

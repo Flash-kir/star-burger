@@ -177,6 +177,12 @@ class Order(models.Model):
         db_index=True,
         verbose_name='метод оплаты',
     )
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        null=True,
+        default=None,
+    )
     comment = models.TextField(
         max_length=300,
         blank=True,
@@ -216,6 +222,23 @@ class Order(models.Model):
 
     def __str__(self):
         return f'{self.pk}. {self.surname} {self.name} - {self.phone}({self.address})'
+
+    def get_order_items_list(self):
+        return list(self.items.values_list('item', flat=True))
+
+    def restaurants_possibility_make_order(self, ):
+        actual_menus = {}
+        menu_items = list(RestaurantMenuItem.objects.filter(availability=True).values_list('restaurant', 'product'))
+        for item in menu_items:
+            if item[0] not in actual_menus.keys():
+                actual_menus[item[0]] = []
+            actual_menus[item[0]].append(item[1])
+        item_list = self.get_order_items_list()
+        restaurant_list = []
+        for restaurant, products_list in actual_menus.items():
+            if set(item_list).issubset(set(products_list)):
+                restaurant_list.append(restaurant)
+        return restaurant_list
 
 
 class OrderContent(models.Model):
