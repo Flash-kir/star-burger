@@ -1,6 +1,7 @@
 from django import template
 from django.utils.safestring import mark_safe
 from foodcartapp.models import Restaurant, RestaurantMenuItem
+from foodcartapp.models import OrderDistance
 from restaurateur.geo_utils import calculate_distance, distance_text
 
 register = template.Library()
@@ -40,11 +41,17 @@ def restaurants_list(order):
     else:
         restaurants_allow = list(Restaurant.objects.filter(pk__in=order.restaurants_possibility_make_order()))
         if restaurants_allow:
-
             restaurants_for_sort = []
             for restaurant in restaurants_allow:
-                distance = calculate_distance(order.address, restaurant.address)
-                restaurants_for_sort.append((distance, restaurant))
+                order_dist = restaurant.distances.get_or_create(order=order, restaurant=restaurant)[0]
+                if not order_dist.distance:
+                    distance = calculate_distance(order.address, restaurant.address)
+                    restaurants_for_sort.append((distance, restaurant))
+                    if distance:
+                        order_dist.distance = distance
+                        order_dist.save()
+                else:
+                    restaurants_for_sort.append((order_dist.distance, restaurant))
 
             sorted_restaurants = sorted(restaurants_for_sort, key=lambda restaurant: restaurant[0])
             html_response = 'Может быть приготовлен ресторанами: <ul>'

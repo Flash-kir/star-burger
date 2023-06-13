@@ -181,6 +181,7 @@ class Order(models.Model):
         Restaurant,
         on_delete=models.CASCADE,
         null=True,
+        blank=True,
         default=None,
     )
     comment = models.TextField(
@@ -270,3 +271,32 @@ class OrderContent(models.Model):
         self.price = self.item.price
         self.save()
         return self.price
+
+
+class OrderDistance(models.Model):
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        verbose_name='расстояние',
+        related_name='distances',
+        null=True,
+        default=None,
+    )
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        verbose_name='расстояние',
+        related_name='distances',
+        null=True,
+        default=None,
+    )
+    distance = models.DecimalField(
+        'расстояние',
+        max_digits=8,
+        decimal_places=2,
+        default=None,
+        null=True,
+    )
+
+    class Meta:
+        unique_together = ['order', 'restaurant']

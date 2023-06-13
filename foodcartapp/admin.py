@@ -11,6 +11,8 @@ from .models import RestaurantMenuItem
 from .models import Order
 from .models import OrderContent
 
+from restaurateur.geo_utils import calculate_distance
+
 
 class OrderContentInline(admin.TabularInline):
     model = OrderContent
@@ -51,6 +53,16 @@ class OrderAdmin(admin.ModelAdmin):
         if obj.restaurant and obj.status == obj.NEW:
             obj.status = obj.COOK
             obj.called_at = timezone.now()
+
+        if 'address' in form.changed_data:
+            restaurants_allow = list(Restaurant.objects.filter(pk__in=obj.restaurants_possibility_make_order()))
+            if restaurants_allow:
+                for restaurant in restaurants_allow:
+                    order_dist = restaurant.distances.get_or_create(order=obj, restaurant=restaurant)[0]
+                    distance = calculate_distance(obj.address, restaurant.address)
+                    if distance:
+                        order_dist.distance = distance
+                        order_dist.save()
         return super().save_model(request, obj, form, change)
 
 
