@@ -18,7 +18,7 @@ def fetch_coordinates(address):
 
     most_relevant = found_places[0]
     lon, lat = most_relevant['GeoObject']['Point']['pos'].split(" ")
-    return lon, lat
+    return lat, lon
 
 
 def calculate_distance(address1, address2):
