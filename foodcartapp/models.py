@@ -1,11 +1,7 @@
-import datetime
-
 from django.utils import timezone
-
 from django.db import models
 from django.core.validators import MinValueValidator
 from phonenumber_field.modelfields import PhoneNumberField
-from django.db.models import Sum
 
 
 class Restaurant(models.Model):

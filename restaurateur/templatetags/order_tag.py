@@ -1,7 +1,6 @@
 from django import template
 from django.utils.safestring import mark_safe
-from foodcartapp.models import Restaurant, RestaurantMenuItem
-from foodcartapp.models import OrderDistance
+from foodcartapp.models import Restaurant
 from restaurateur.geo_utils import calculate_distance, distance_text
 
 register = template.Library()
@@ -17,21 +16,6 @@ def payment_method(order):
     return order.get_payment_method_display()
 
 
-def resta_urants_possibility_make_order(self):
-    actual_menus = {}
-    menu_items = list(RestaurantMenuItem.objects.filter(availability=True).values_list('restaurant', 'product'))
-    for item in menu_items:
-        if item[0] not in actual_menus.keys():
-            actual_menus[item[0]] = []
-        actual_menus[item[0]].append(item[1])
-    item_list = self.get_order_items_list()
-    restaurant_list = []
-    for restaurant, products_list in actual_menus.items():
-        if set(item_list).issubset(set(products_list)):
-            restaurant_list.append(restaurant)
-    return restaurant_list
-
-
 @register.filter(is_safe=True)
 def restaurants_list(order):
     html_response = ''
@@ -39,21 +23,34 @@ def restaurants_list(order):
         distance = calculate_distance(order.address, order.restaurant.address)
         html_response = f'Готовит: <p>{order.restaurant.name}{distance_text(distance)}</p>'
     else:
-        restaurants_allow = list(Restaurant.objects.filter(pk__in=order.restaurants_possibility_make_order()))
+        restaurants_allow = list(
+            Restaurant.objects.filter(
+                pk__in=order.restaurants_possibility_make_order()
+            )
+        )
         if restaurants_allow:
             restaurants_for_sort = []
             for restaurant in restaurants_allow:
-                order_dist = restaurant.distances.get_or_create(order=order, restaurant=restaurant)[0]
+                order_dist = restaurant.distances.get_or_create(
+                                   order=order, restaurant=restaurant
+                )[0]
                 if not order_dist.distance:
-                    distance = calculate_distance(order.address, restaurant.address)
+                    distance = calculate_distance(
+                                    order.address,
+                                    restaurant.address
+                    )
                     restaurants_for_sort.append((distance, restaurant))
                     if distance:
                         order_dist.distance = distance
                         order_dist.save()
                 else:
-                    restaurants_for_sort.append((order_dist.distance, restaurant))
+                    restaurants_for_sort.append(
+                        (order_dist.distance, restaurant)
+                    )
 
-            sorted_restaurants = sorted(restaurants_for_sort, key=lambda restaurant: restaurant[0])
+            sorted_restaurants = sorted(
+                restaurants_for_sort, key=lambda restaurant: restaurant[0]
+            )
             html_response = 'Может быть приготовлен ресторанами: <ul>'
             for distance, restaurant in sorted_restaurants:
                 html_response += f'<li>{restaurant.name}{distance_text(distance)}</li>'

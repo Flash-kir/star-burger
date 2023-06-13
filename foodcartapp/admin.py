@@ -5,7 +5,6 @@ from django.utils.html import format_html
 from django.utils import timezone
 
 from .models import Product
-from .models import ProductCategory
 from .models import Restaurant
 from .models import RestaurantMenuItem
 from .models import Order
@@ -46,7 +45,9 @@ class OrderAdmin(admin.ModelAdmin):
 
     def get_form(self, request, obj=None, **kwargs):
         form = super(OrderAdmin, self).get_form(request, obj, **kwargs)
-        form.base_fields['restaurant'].queryset = Restaurant.objects.filter(pk__in=obj.restaurants_possibility_make_order())
+        form.base_fields['restaurant'].queryset = Restaurant.objects.filter(
+            pk__in=obj.restaurants_possibility_make_order()
+        )
         return form
 
     def save_model(self, request, obj, form, change):
@@ -55,11 +56,21 @@ class OrderAdmin(admin.ModelAdmin):
             obj.called_at = timezone.now()
 
         if 'address' in form.changed_data:
-            restaurants_allow = list(Restaurant.objects.filter(pk__in=obj.restaurants_possibility_make_order()))
+            restaurants_allow = list(
+                Restaurant.objects.filter(
+                    pk__in=obj.restaurants_possibility_make_order()
+                )
+            )
             if restaurants_allow:
                 for restaurant in restaurants_allow:
-                    order_dist = restaurant.distances.get_or_create(order=obj, restaurant=restaurant)[0]
-                    distance = calculate_distance(obj.address, restaurant.address)
+                    order_dist = restaurant.distances.get_or_create(
+                        order=obj,
+                        restaurant=restaurant
+                    )[0]
+                    distance = calculate_distance(
+                        obj.address,
+                        restaurant.address
+                    )
                     if distance:
                         order_dist.distance = distance
                         order_dist.save()
@@ -115,7 +126,8 @@ class ProductAdmin(admin.ModelAdmin):
         'category',
     ]
     search_fields = [
-        # FIXME SQLite can not convert letter case for cyrillic words properly, so search will be buggy.
+        # FIXME SQLite can not convert letter case for cyrillic words properly,
+        # so search will be buggy.
         # Migration to PostgreSQL is necessary
         'name',
         'category__name',
@@ -159,17 +171,19 @@ class ProductAdmin(admin.ModelAdmin):
     def get_image_preview(self, obj):
         if not obj.image:
             return 'выберите картинку'
-        return format_html('<img src="{url}" style="max-height: 200px;"/>', url=obj.image.url)
+        return format_html(
+            '<img src="{url}" style="max-height: 200px;"/>',
+            url=obj.image.url
+        )
     get_image_preview.short_description = 'превью'
 
     def get_image_list_preview(self, obj):
         if not obj.image or not obj.id:
             return 'нет картинки'
         edit_url = reverse('admin:foodcartapp_product_change', args=(obj.id,))
-        return format_html('<a href="{edit_url}"><img src="{src}" style="max-height: 50px;"/></a>', edit_url=edit_url, src=obj.image.url)
+        return format_html(
+            '<a href="{edit_url}"><img src="{src}" style="max-height: 50px;"/></a>',
+            edit_url=edit_url,
+            src=obj.image.url
+        )
     get_image_list_preview.short_description = 'превью'
-
-
-@admin.register(ProductCategory)
-class ProductAdmin(admin.ModelAdmin):
-    pass
