@@ -10,8 +10,8 @@ from .models import Product
 from .models import Order
 from .models import OrderContent
 
-from .validators import OrderSerializer
-from .validators import OrderContentSerializer
+from .serializers import OrderSerializer
+from .serializers import OrderContentSerializer
 
 
 def banners_list_api(request):
@@ -92,15 +92,16 @@ def register_order(request):
             order.save()
 
             for item in order_query_content['products']:
+                order_item = Product.objects.get(pk=item['OrderContent']['item'])
                 ordercontent = OrderContent(
                     order=order,
-                    item=Product.objects.get(pk=item['OrderContent']['item']),
-                    quantity=item['OrderContent']['quantity']
+                    item=order_item,
+                    quantity=item['OrderContent']['quantity'],
+                    price=order_item.price,
                 )
                 ordercontent.save()
 
-                ordercontent.calculate_price()
-        except Exception:
+        except Exception as err:
             if order:
                 order.delete()
 

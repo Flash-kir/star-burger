@@ -261,11 +261,6 @@ class OrderContent(models.Model):
         validators=[MinValueValidator(0)],
     )
 
-    def calculate_price(self):
-        self.price = self.item.price
-        self.save()
-        return self.price
-
 
 class OrderDistance(models.Model):
     order = models.ForeignKey(
