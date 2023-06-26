@@ -169,7 +169,8 @@ class Order(models.Model):
     payment_method = models.CharField(
         max_length=2,
         choices=PAYMENT_METHODS,
-        default=CASH,
+        default=None,
+        blank=True,
         db_index=True,
         verbose_name='метод оплаты',
     )
@@ -183,7 +184,6 @@ class Order(models.Model):
     comment = models.TextField(
         max_length=300,
         blank=True,
-        default='',
         verbose_name='комментарий',
     )
     registrated_at = models.DateTimeField(
