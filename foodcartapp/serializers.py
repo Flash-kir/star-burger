@@ -1,8 +1,9 @@
 from django.core.validators import RegexValidator
 
 from rest_framework.serializers import ModelSerializer
-from rest_framework.serializers import Serializer, ValidationError
+from rest_framework.serializers import ValidationError
 from rest_framework.serializers import CharField, ListField, IntegerField
+from phonenumber_field.serializerfields import PhoneNumberField
 
 from .models import Product, Order, OrderContent
 
@@ -18,11 +19,16 @@ class OrderContentSerializer(ModelSerializer):
         model = OrderContent
         fields = ('id', 'product', 'quantity')
 
-    def validate_product(self, product_id):
-        data = Product.objects.filter(id=product_id).first()
-        if not data:
-            raise ValidationError("Продукт не существует.")
-        return data.pk
+    def create(self, validated_data):
+        return OrderContent.objects.create(**validated_data['OrderContent'])
+
+    def update(self, instance, validated_data):
+        instance.order = validated_data.get('order', instance.order),
+        instance.item = validated_data.get('item', instance.item),
+        instance.quantity = validated_data.get('quantity', instance.quantity),
+        instance.price = validated_data.get('price', instance.price),
+        instance.save()
+        return instance
 
 
 class OrderSerializer(ModelSerializer):
@@ -39,21 +45,19 @@ class OrderSerializer(ModelSerializer):
             ),
         ],
     )
-    products = ListField(
-        child=OrderContentSerializer(),
-        min_length=1,
-        allow_empty=False
-    )
+    products = OrderContentSerializer(many=True)
 
     class Meta:
         model = Order
         fields = ('id', 'firstname', 'lastname', 'address', 'phonenumber', 'products')
 
-    def to_representation(self, instance):
-        ret = super(OrderSerializer, self).to_representation(instance)
-        # check the request is list view or detail view
-        print(self)
-        is_list_view = isinstance(self.instance, list)
-        extra_ret = {'key': 'list value'} if is_list_view else {'key': 'single value'}
-        ret.update(extra_ret)
-        return ret
+    def create(self, validated_data):
+        return Order.objects.create(**validated_data['Order'])
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name),
+        instance.surname = validated_data.get('surname', instance.surname),
+        instance.address = validated_data.get('address', instance.address),
+        instance.phone = validated_data.get('phone', instance.phone),
+        instance.save()
+        return instance

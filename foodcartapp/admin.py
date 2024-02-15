@@ -9,6 +9,8 @@ from .models import Restaurant
 from .models import RestaurantMenuItem
 from .models import Order
 from .models import OrderContent
+from .models import OrderDistance
+from .models import Distances
 
 from restaurateur.geo_utils import calculate_distance
 
@@ -16,6 +18,37 @@ from restaurateur.geo_utils import calculate_distance
 class OrderContentInline(admin.TabularInline):
     model = OrderContent
     extra = 0
+
+
+class OrderDistanceInLine(admin.TabularInline):
+    model = OrderDistance
+    extra = 0
+
+
+@admin.register(Distances)
+class DistancesAdmin(admin.ModelAdmin):
+    search_fields = [
+        'address_1',
+        'address_2',
+    ]
+    list_display = [
+        'address_1',
+        'address_2',
+        'distance'
+    ]
+
+
+@admin.register(OrderDistance)
+class OrderDistanceAdmin(admin.ModelAdmin):
+    search_fields = [
+        'restaurant',
+        'order'
+    ]
+    list_display = [
+        'restaurant',
+        'order',
+        'distance'
+    ]
 
 
 @admin.register(Order)
@@ -34,7 +67,8 @@ class OrderAdmin(admin.ModelAdmin):
         'phone',
     ]
     inlines = [
-        OrderContentInline
+        OrderContentInline,
+        OrderDistanceInLine
     ]
 
     def response_change(self, request, obj):
@@ -54,7 +88,6 @@ class OrderAdmin(admin.ModelAdmin):
         if obj.restaurant and obj.status == obj.NEW:
             obj.status = obj.COOK
             obj.called_at = timezone.now()
-
         if 'address' in form.changed_data:
             restaurants_allow = list(
                 Restaurant.objects.filter(
@@ -68,8 +101,8 @@ class OrderAdmin(admin.ModelAdmin):
                         restaurant=restaurant
                     )[0]
                     distance = calculate_distance(
-                        obj.address,
-                        restaurant.address
+                        restaurant.address,
+                        obj.address
                     )
                     if distance:
                         order_dist.distance = distance

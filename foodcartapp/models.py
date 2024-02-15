@@ -263,22 +263,44 @@ class OrderContent(models.Model):
     )
 
 
-class OrderDistance(models.Model):
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        verbose_name='расстояние',
-        related_name='distances',
-        null=True,
-        default=None,
+class Address(models.Model):
+    address = models.CharField(
+        verbose_name='адрес',
+        max_length=200,
     )
-    restaurant = models.ForeignKey(
-        Restaurant,
-        on_delete=models.CASCADE,
-        verbose_name='расстояние',
-        related_name='distances',
-        null=True,
+    lat = models.DecimalField(
+        'широта',
+        max_digits=8,
+        decimal_places=2,
         default=None,
+        null=True,
+    )
+    lon = models.DecimalField(
+        'долгота',
+        max_digits=8,
+        decimal_places=2,
+        default=None,
+        null=True,
+    )
+
+    def __str__(self):
+        return self.address
+
+
+class Distances(models.Model):
+    address_1 = models.ForeignKey(
+        Address,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='address_1',
+        verbose_name='адрес 1'
+    )
+    address_2 = models.ForeignKey(
+        Address,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='address_2',
+        verbose_name='адрес 2'
     )
     distance = models.DecimalField(
         'расстояние',
@@ -286,6 +308,38 @@ class OrderDistance(models.Model):
         decimal_places=2,
         default=None,
         null=True,
+    )
+
+    class Meta:
+        unique_together = ['address_1', 'address_2']
+
+    def __str__(self):
+        return f'{self.distance} км.'
+
+
+class OrderDistance(models.Model):
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        verbose_name='заказ',
+        related_name='distances',
+        null=True,
+        default=None,
+    )
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        verbose_name='ресторан',
+        related_name='distances',
+        null=True,
+        default=None,
+    )
+    distance = models.ForeignKey(
+        Distances,
+        verbose_name='расстояние',
+        default=None,
+        null=True,
+        on_delete=models.SET_NULL,
     )
 
     class Meta:

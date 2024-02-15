@@ -79,19 +79,10 @@ def register_order(request):
         serializer_products = OrderContentSerializer(data=items)
         serializer_products.is_valid(raise_exception=True)
 
-    order_query_content = serializer.validated_data
-
+    order = serializer.save(data=serializer.validated_data['Order'])
     with transaction.atomic():
         try:
-            order = Order(
-                name=order_query_content['Order']['name'],
-                surname=order_query_content['Order']['surname'],
-                address=order_query_content['Order']['address'],
-                phone=order_query_content['Order']['phone']
-            )
-            order.save()
-
-            for item in order_query_content['products']:
+            for item in serializer.validated_data['products']:
                 order_item = Product.objects.get(pk=item['OrderContent']['item'])
                 ordercontent = OrderContent(
                     order=order,
