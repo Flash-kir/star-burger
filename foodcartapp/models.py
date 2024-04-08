@@ -150,7 +150,7 @@ class Order(models.Model):
         verbose_name='отчество',
         max_length=50,
     )
-    phone = PhoneNumberField(
+    phonenumber = PhoneNumberField(
         region="RU",
         db_index=True,
         verbose_name='телефон',
@@ -205,7 +205,7 @@ class Order(models.Model):
     )
 
     def __str__(self):
-        return f'{self.pk}. {self.surname} {self.name} - {self.phone}({self.address})'
+        return f'{self.pk}. {self.surname} {self.name} - {self.phonenumber}({self.address})'
 
     def get_order_items_list(self):
         return list(self.items.values_list('item', flat=True))

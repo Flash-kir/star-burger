@@ -1,8 +1,7 @@
 from django.core.validators import RegexValidator
 
 from rest_framework.serializers import ModelSerializer
-from rest_framework.serializers import ValidationError
-from rest_framework.serializers import CharField, ListField, IntegerField
+from rest_framework.serializers import CharField, IntegerField
 from phonenumber_field.serializerfields import PhoneNumberField
 
 from .models import Product, Order, OrderContent
@@ -30,21 +29,23 @@ class OrderContentSerializer(ModelSerializer):
         instance.save()
         return instance
 
+    def save(self, data, order, *args, **kwargs):
+        product = Product.objects.get(pk=data['item'])
+        item = OrderContent(
+            order=order,
+            item=product,
+            quantity=data['quantity'],
+            price=product.price,
+        )
+        item.save()
+        return item
+
 
 class OrderSerializer(ModelSerializer):
     firstname = CharField(source="Order.name")
     lastname = CharField(source="Order.surname")
     address = CharField(source="Order.address")
-    phonenumber = CharField(
-        source="Order.phone",
-        max_length=17,
-        validators=[
-            RegexValidator(
-                regex=r'^((\+?7|8)[ \-.]?)?((\([1-9][0-9]{2}\))|([1-9][0-9]{2}))?([ \-.])?(\d{3}[\- .]?\d{2}[\- .]?\d{2})$',
-                message="Phone number must be entered in the format '+71234567890'. Up to 13 digits allowed."
-            ),
-        ],
-    )
+    phonenumber = PhoneNumberField(source="Order.phonenumber")
     products = OrderContentSerializer(many=True)
 
     class Meta:
@@ -58,6 +59,16 @@ class OrderSerializer(ModelSerializer):
         instance.name = validated_data.get('name', instance.name),
         instance.surname = validated_data.get('surname', instance.surname),
         instance.address = validated_data.get('address', instance.address),
-        instance.phone = validated_data.get('phone', instance.phone),
+        instance.phonenumber = validated_data.get('phonenumber', instance.phonenumber),
         instance.save()
         return instance
+
+    def save(self, data, *args, **kwargs):
+        order = Order(
+            name=data['name'],
+            surname=data['surname'],
+            address=data['address'],
+            phonenumber=data['phonenumber'],
+        )
+        order.save()
+        return order

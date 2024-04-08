@@ -57,14 +57,14 @@ class OrderAdmin(admin.ModelAdmin):
         'address',
         'name',
         'surname',
-        'phone'
+        'phonenumber'
     ]
     list_display = [
         'pk',
         'name',
         'surname',
         'address',
-        'phone',
+        'phonenumber',
     ]
     inlines = [
         OrderContentInline,
