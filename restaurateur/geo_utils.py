@@ -1,7 +1,7 @@
 import requests
 from geopy import distance
 from django.conf import settings
-from foodcartapp.models import Address, Distances
+from foodcartapp.models import Address
 
 
 def fetch_coordinates(address):
@@ -32,8 +32,7 @@ def calculate_distance(address1, address2):
         dist = distance.distance((lat1, lon1), (lat2, lon2)).km
     else:
         dist = None
-    dist_obj, create = Distances.objects.get_or_create(address_1=restaurant_address, address_2=order_address, distance=dist)
-    return dist_obj
+    return dist
 
 
 def distance_text(distance):

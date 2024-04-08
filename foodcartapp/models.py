@@ -205,14 +205,19 @@ class Order(models.Model):
     )
 
     def __str__(self):
-        return f'{self.pk}. {self.surname} {self.name} - {self.phonenumber}({self.address})'
+        return f'{self.pk}. {self.surname} {self.name} \
+            - {self.phonenumber}({self.address})'
 
     def get_order_items_list(self):
         return list(self.items.values_list('item', flat=True))
 
     def restaurants_possibility_make_order(self, ):
         actual_menus = {}
-        menu_items = list(RestaurantMenuItem.objects.filter(availability=True).values_list('restaurant', 'product'))
+        menu_items = list(
+            RestaurantMenuItem.objects.filter(
+                availability=True
+            ).values_list('restaurant', 'product')
+        )
         for item in menu_items:
             if item[0] not in actual_menus.keys():
                 actual_menus[item[0]] = []
@@ -272,62 +277,3 @@ class Address(models.Model):
 
     def __str__(self):
         return self.address
-
-
-class Distances(models.Model):
-    address_1 = models.ForeignKey(
-        Address,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='address_1',
-        verbose_name='адрес 1'
-    )
-    address_2 = models.ForeignKey(
-        Address,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='address_2',
-        verbose_name='адрес 2'
-    )
-    distance = models.DecimalField(
-        'расстояние',
-        max_digits=8,
-        decimal_places=2,
-        default=None,
-        null=True,
-    )
-
-    class Meta:
-        unique_together = ['address_1', 'address_2']
-
-    def __str__(self):
-        return f'{self.distance} км.'
-
-
-class OrderDistance(models.Model):
-    order = models.ForeignKey(
-        Order,
-        on_delete=models.CASCADE,
-        verbose_name='заказ',
-        related_name='distances',
-        null=True,
-        default=None,
-    )
-    restaurant = models.ForeignKey(
-        Restaurant,
-        on_delete=models.CASCADE,
-        verbose_name='ресторан',
-        related_name='distances',
-        null=True,
-        default=None,
-    )
-    distance = models.ForeignKey(
-        Distances,
-        verbose_name='расстояние',
-        default=None,
-        null=True,
-        on_delete=models.SET_NULL,
-    )
-
-    class Meta:
-        unique_together = ['order', 'restaurant']
