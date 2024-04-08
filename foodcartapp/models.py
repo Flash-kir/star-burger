@@ -204,18 +204,6 @@ class Order(models.Model):
         verbose_name='время доставки',
     )
 
-    def get_payment_method_display(self):
-        for method in self.PAYMENT_METHODS:
-            if self.payment_method == method[0]:
-                return method[1]
-        return ''
-
-    def get_order_status_display(self):
-        for status in self.ORDER_STATUS:
-            if self.status == status[0]:
-                return status[1]
-        return ''
-
     def __str__(self):
         return f'{self.pk}. {self.surname} {self.name} - {self.phone}({self.address})'
 
@@ -246,10 +234,9 @@ class OrderContent(models.Model):
     )
     item = models.ForeignKey(
         Product,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         verbose_name='продукт',
         related_name='products',
-        null=True
     )
     quantity = models.IntegerField(
         verbose_name='количество',

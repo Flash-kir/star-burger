@@ -81,19 +81,19 @@ def register_order(request):
 
     order = serializer.save(data=serializer.validated_data['Order'])
     with transaction.atomic():
-        try:
-            for item in serializer.validated_data['products']:
-                order_item = Product.objects.get(pk=item['OrderContent']['item'])
-                ordercontent = OrderContent(
-                    order=order,
-                    item=order_item,
-                    quantity=item['OrderContent']['quantity'],
-                    price=order_item.price,
-                )
-                ordercontent.save()
+#        try:
+        for item in serializer.validated_data['products']:
+            order_item = Product.objects.get(pk=item['OrderContent']['item'])
+            ordercontent = OrderContent(
+                order=order,
+                item=order_item,
+                quantity=item['OrderContent']['quantity'],
+                price=order_item.price,
+            )
+            ordercontent.save()
 
-        except Exception as err:
-            if order:
-                order.delete()
+ #       except Exception as err:
+ #           if order:
+ #               order.delete()
 
     return Response(serializer.validated_data)
