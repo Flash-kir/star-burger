@@ -8,12 +8,12 @@ register = template.Library()
 
 @register.filter
 def status(order):
-    return order.get_order_status_display()
+    return order.status
 
 
 @register.filter
 def payment_method(order):
-    return order.get_payment_method_display()
+    return order.payment_method
 
 
 @register.filter(is_safe=True)
@@ -31,21 +31,11 @@ def restaurants_list(order):
         if restaurants_allow:
             restaurants_for_sort = []
             for restaurant in restaurants_allow:
-                order_dist = restaurant.distances.get_or_create(
-                                   order=order, restaurant=restaurant
-                )[0]
-                if not order_dist.distance:
-                    distance = calculate_distance(
-                                    order.address,
-                                    restaurant.address
-                    )
-                    restaurants_for_sort.append((distance, restaurant))
-                    if distance:
-                        order_dist.distance = distance
-                        order_dist.save()
-                else:
                     restaurants_for_sort.append(
-                        (order_dist.distance, restaurant)
+                        (
+                            calculate_distance(order.address, restaurant.address),
+                            restaurant
+                        )
                     )
 
             sorted_restaurants = sorted(

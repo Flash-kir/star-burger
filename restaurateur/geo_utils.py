@@ -5,7 +5,6 @@ from foodcartapp.models import Address
 
 
 def fetch_coordinates(address):
-    print(address)
     base_url = "https://geocode-maps.yandex.ru/1.x"
     response = requests.get(base_url, params={
         "geocode": address,
@@ -38,7 +37,7 @@ def calculate_distance(address1, address2):
 def distance_text(distance):
     distance_text = ''
     if distance:
-        distance_text = f' - {distance} км.'
+        distance_text = f' - {round(distance, 3)} км.'
     else:
         distance_text = ' (не удалось вычислить расстояние)'
     return distance_text
