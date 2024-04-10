@@ -54,17 +54,6 @@ class OrderAdmin(admin.ModelAdmin):
         if obj.restaurant and obj.status == obj.NEW:
             obj.status = obj.COOK
             obj.called_at = timezone.now()
-        '''
-        if 'address' in form.changed_data:
-            restaurants_allow = list(
-                Restaurant.objects.filter(
-                    pk__in=obj.restaurants_possibility_make_order()
-                )
-            )
-            if restaurants_allow:
-                for restaurant in restaurants_allow:
-                    pass
-        '''
         return super().save_model(request, obj, form, change)
 
 

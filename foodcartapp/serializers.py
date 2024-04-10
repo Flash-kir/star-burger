@@ -44,8 +44,8 @@ class OrderContentSerializer(ModelSerializer):
 class OrderSerializer(ModelSerializer):
     firstname = CharField(source="Order.name")
     lastname = CharField(source="Order.surname")
-    address = CharField(source="Order.address")
-    phonenumber = PhoneNumberField(source="Order.phonenumber")
+    address = CharField()
+    phonenumber = PhoneNumberField()
     products = OrderContentSerializer(many=True)
 
     class Meta:
@@ -65,8 +65,8 @@ class OrderSerializer(ModelSerializer):
 
     def save(self, data, *args, **kwargs):
         order = Order(
-            name=data['name'],
-            surname=data['surname'],
+            name=data['Order']['name'],
+            surname=data['Order']['surname'],
             address=data['address'],
             phonenumber=data['phonenumber'],
         )

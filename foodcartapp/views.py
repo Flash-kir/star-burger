@@ -15,7 +15,6 @@ from .serializers import OrderContentSerializer
 
 
 def banners_list_api(request):
-    # FIXME move data to db?
     return JsonResponse([
         {
             'title': 'Burger',
@@ -78,9 +77,9 @@ def register_order(request):
     for items in products:
         serializer_products = OrderContentSerializer(data=items)
         serializer_products.is_valid(raise_exception=True)
-    number = serializer.validated_data['Order']['phonenumber']
-    serializer.validated_data['Order']['phonenumber'] = number.as_national
-    order = serializer.save(data=serializer.validated_data['Order'])
+    number = serializer.validated_data['phonenumber']
+    serializer.validated_data['phonenumber'] = number.as_national
+    order = serializer.save(data=serializer.validated_data)
     with transaction.atomic():
         for item in serializer.validated_data['products']:
             serializer_products.save(data=item['OrderContent'], order=order)
