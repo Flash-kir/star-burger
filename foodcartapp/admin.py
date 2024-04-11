@@ -9,6 +9,7 @@ from .models import Restaurant
 from .models import RestaurantMenuItem
 from .models import Order
 from .models import OrderContent
+from .models import Address
 
 from restaurateur.geo_utils import calculate_distance
 
@@ -72,6 +73,21 @@ class OrderContentAdmin(admin.ModelAdmin):
 class RestaurantMenuItemInline(admin.TabularInline):
     model = RestaurantMenuItem
     extra = 0
+
+
+@admin.register(Address)
+class AddressAdmin(admin.ModelAdmin):
+    search_fields = [
+        'address',
+        'lat',
+        'lon',
+    ]
+    list_display = [
+        'pk',
+        'address',
+        'lat',
+        'lon',
+    ]
 
 
 @admin.register(Restaurant)
