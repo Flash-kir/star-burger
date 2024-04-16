@@ -1,17 +1,12 @@
 from django.http import JsonResponse
 from django.templatetags.static import static
-from django.db import transaction
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.serializers import ValidationError
 
 from .models import Product
-from .models import Order
-from .models import OrderContent
 
 from .serializers import OrderSerializer
-from .serializers import OrderContentSerializer
 
 
 def banners_list_api(request):
@@ -69,18 +64,6 @@ def product_list_api(request):
 def register_order(request):
     serializer = OrderSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
+    serializer.save(data=serializer.validated_data)
 
-    products = request.data.get('products', [])
-    if not isinstance(products, list):
-        raise ValidationError('Expects products field be a list')
-
-    for items in products:
-        serializer_products = OrderContentSerializer(data=items)
-        serializer_products.is_valid(raise_exception=True)
-    number = serializer.validated_data['phonenumber']
-    serializer.validated_data['phonenumber'] = number.as_national
-    order = serializer.save(data=serializer.validated_data)
-    with transaction.atomic():
-        for item in serializer.validated_data['products']:
-            serializer_products.save(data=item['OrderContent'], order=order)
     return Response(serializer.validated_data)

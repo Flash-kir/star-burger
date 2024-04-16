@@ -1,7 +1,8 @@
-from django.core.validators import RegexValidator
+from django.db import transaction
 
 from rest_framework.serializers import ModelSerializer
 from rest_framework.serializers import CharField, IntegerField
+from rest_framework.serializers import ValidationError
 from phonenumber_field.serializerfields import PhoneNumberField
 
 from .models import Product, Order, OrderContent
@@ -64,6 +65,8 @@ class OrderSerializer(ModelSerializer):
         return instance
 
     def save(self, data, *args, **kwargs):
+        number = data['phonenumber']
+        data['phonenumber'] = number.as_national
         order = Order(
             name=data['Order']['name'],
             surname=data['Order']['surname'],
@@ -71,4 +74,16 @@ class OrderSerializer(ModelSerializer):
             phonenumber=data['phonenumber'],
         )
         order.save()
+
+        products = data.get('products', [])
+        if not isinstance(products, list):
+            raise ValidationError('Expects products field be a list')
+        with transaction.atomic():
+            for item in products:
+                item['product'] = item['OrderContent']['item']
+                item['quantity'] = item['OrderContent']['quantity']
+                serializer_products = OrderContentSerializer(data=item)
+                serializer_products.is_valid(raise_exception=True)
+                serializer_products.save(data=item['OrderContent'], order=order)
+
         return order

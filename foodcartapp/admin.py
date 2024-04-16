@@ -65,8 +65,11 @@ class OrderContentAdmin(admin.ModelAdmin):
         'item'
     ]
     list_display = [
+        'pk',
         'order',
-        'item'
+        'item',
+        'quantity',
+        'price',
     ]
 
 
