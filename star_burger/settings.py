@@ -3,7 +3,7 @@ import os
 import dj_database_url
 
 from environs import Env
-
+from git import Repo
 
 env = Env()
 env.read_env()
@@ -40,7 +40,19 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'rollbar.contrib.django.middleware.RollbarNotifierMiddlewareExcluding404',
 ]
+
+local_repo = Repo(path=BASE_DIR)
+local_branch = local_repo.active_branch.name
+rollbar_place = env('ROLLBAR_PLACE', 'unknown')
+
+ROLLBAR = {
+    'access_token': env('ROLLBAR_ACCESS_TOKEN'),
+    'environment': f'place:{rollbar_place}-branch:{local_branch}',
+    'code_version': '1.0',
+    'root': BASE_DIR,
+}
 
 ROOT_URLCONF = 'star_burger.urls'
 
