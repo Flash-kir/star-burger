@@ -8,6 +8,9 @@ from .models import Product
 
 from .serializers import OrderSerializer
 
+from django.shortcuts import render
+from django.http import HttpResponse
+
 
 def banners_list_api(request):
     return JsonResponse([
