@@ -166,6 +166,7 @@ git pull
 source ../starburger/bin/activate
 pip install -q -r requirements.txt
 #js modules install
+npm install
 ./node_modules/.bin/parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
 #Django collectstatic
 python3 manage.py collectstatic --noinput
