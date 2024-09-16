@@ -157,6 +157,33 @@ Parcel будет следить за файлами в каталоге `bundle
 - `DB_URL_POSTGRESQL` - необходимо указать натройки доступа к БД postgreql вида 
 `'postgresql://username:password@localhost:5432/DB_name'`
 
+создайте на сервере скрипт `deploy_star_burger.sh` с кодом
+```sh
+trap 'ERROR_CODE=$?; FAILED_COMMAND=$LAST_COMMAND; tput setaf 1; echo "ERROR: command \"$FAILED_COMMAND\" failed with exit code $ERROR_CODE"; put sgr0;' ERR INT TERM
+
+cd /opt/starburger/star-burger
+git pull
+source ../starburger/bin/activate
+pip install -q -r requirements.txt
+#js modules install
+./node_modules/.bin/parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
+#Django collectstatic
+python3 manage.py collectstatic --noinput
+python3 manage.py migrate
+#reload systemd services
+systemctl stop starburger.service
+systemctl start starburger.service
+echo Deploy ends successful.
+git_hash=$(git rev-parse HEAD)
+echo {\"environment\": \"qa\", \"revision\": \"$git_hash\", \"rollbar_name\": \"SB\", \"local_username\": \"fiash.kir\", \"comment\": \"deployment\", \"status\": \"succeeded\"} > ./post.json
+echo "$(cat ./post.json)"
+curl -H "X-Rollbar-Access-Token: b857e5426724409d9f78fd7b62f1776b" -H "Content-Type: application/json" -X POST 'https://api.rollbar.com/api/1/deploy' -d "$(cat ./post.json)"
+```
+этот скрипт обновит проект с git-реппозитория, поставит библиотеки `python` и `node js`, перезапустит проект.
+`/opt/starburger/star-burger` - путь к каталогу проекта
+
+работающий сайт расположен: [https://starburger.flash-kir.ru/](https://starburger.flash-kir.ru/)
+
 ## Цели проекта
 
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).
