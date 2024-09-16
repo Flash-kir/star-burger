@@ -152,7 +152,7 @@ Parcel будет следить за файлами в каталоге `bundle
 - `DEBUG` — дебаг-режим. Поставьте `False`.
 - `SECRET_KEY` — секретный ключ проекта. Он отвечает за шифрование на сайте. Например, им зашифрованы все пароли на вашем сайте.
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
-- `ROLLBAR_ACCESS_TOKEN` - зарегистрируйте проект в [RollBar](https://rollbar.com/) и получите токен
+- `ROLLBAR_ACCESS_TOKEN` - зарегистрируйте проект в [RollBar](https://rollbar.com/) и получите токен. Необязательная настройка возможен запуск без указания токена.
 - `ROLLBAR_PLACE` - укажите имя сервера для логов ошибок, например `production` или `develop`
 - `DB_URL_POSTGRESQL` - необходимо указать натройки доступа к БД postgreql вида 
 `'postgresql://username:password@localhost:5432/DB_name'`
