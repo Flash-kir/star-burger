@@ -173,6 +173,7 @@ python3 manage.py migrate
 #reload systemd services
 systemctl stop starburger.service
 systemctl start starburger.service
+systemctl reload nginx.service
 echo Deploy ends successful.
 git_hash=$(git rev-parse HEAD)
 echo {\"environment\": \"qa\", \"revision\": \"$git_hash\", \"rollbar_name\": \"SB\", \"local_username\": \"fiash.kir\", \"comment\": \"deployment\", \"status\": \"succeeded\"} > ./post.json
