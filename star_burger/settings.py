@@ -48,7 +48,7 @@ local_branch = local_repo.active_branch.name
 rollbar_place = env('ROLLBAR_PLACE', 'unknown')
 
 ROLLBAR = {
-    'access_token': env('ROLLBAR_ACCESS_TOKEN'),
+    'access_token': env('ROLLBAR_ACCESS_TOKEN', ''),
     'environment': f'place:{rollbar_place}-branch:{local_branch}',
     'code_version': '1.0',
     'root': BASE_DIR,
