@@ -2,8 +2,6 @@
 staticfiles/
 
 # node files
-package.json
-package-lock.json
 bundles/**
 node_modules/
 media/
