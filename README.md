@@ -177,7 +177,7 @@ echo Deploy ends successful.
 git_hash=$(git rev-parse HEAD)
 echo {\"environment\": \"qa\", \"revision\": \"$git_hash\", \"rollbar_name\": \"SB\", \"local_username\": \"fiash.kir\", \"comment\": \"deployment\", \"status\": \"succeeded\"} > ./post.json
 echo "$(cat ./post.json)"
-curl -H "X-Rollbar-Access-Token: b857e5426724409d9f78fd7b62f1776b" -H "Content-Type: application/json" -X POST 'https://api.rollbar.com/api/1/deploy' -d "$(cat ./post.json)"
+curl -H "X-Rollbar-Access-Token: b857e5426724409...78fd7b62f1776b" -H "Content-Type: application/json" -X POST 'https://api.rollbar.com/api/1/deploy' -d "$(cat ./post.json)"
 ```
 этот скрипт обновит проект с git-реппозитория, поставит библиотеки `python` и `node js`, перезапустит проект.
 `/opt/starburger/star-burger` - путь к каталогу проекта
