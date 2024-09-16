@@ -159,6 +159,12 @@ Parcel будет следить за файлами в каталоге `bundle
 
 создайте на сервере скрипт `deploy_star_burger.sh` с кодом
 ```sh
+#!/bin/bash
+set -e
+#set -o pipefail
+#   keep track of the last executed command
+trap 'LAST_COMMAND=$CURRENT_COMMAND; CURRENT_COMMAND=$BASH_COMMAND' DEBUG
+#   on error: print the failed command
 trap 'ERROR_CODE=$?; FAILED_COMMAND=$LAST_COMMAND; tput setaf 1; echo "ERROR: command \"$FAILED_COMMAND\" failed with exit code $ERROR_CODE"; put sgr0;' ERR INT TERM
 
 cd /opt/starburger/star-burger
@@ -174,17 +180,12 @@ python3 manage.py migrate
 #reload systemd services
 systemctl stop starburger.service
 systemctl start starburger.service
-"deploy_star_burger.sh" 27L, 1259C                                                                                                                    14,11         Top
-python3 manage.py migrate
-#reload systemd services
-systemctl stop starburger.service
-systemctl start starburger.service
 systemctl reload nginx.service
 echo Deploy ends successful.
 git_hash=$(git rev-parse HEAD)
 echo {\"environment\": \"qa\", \"revision\": \"$git_hash\", \"rollbar_name\": \"SB\", \"local_username\": \"fiash.kir\", \"comment\": \"deployment\", \"status\": \"succeeded\"} > ./post.json
 echo "$(cat ./post.json)"
-if [ -v "${name}" ];
+if [ -v "${rollbar_token}" ];
 then
     curl -H "X-Rollbar-Access-Token: $rollbar_token" -H "Content-Type: application/json" -X POST 'https://api.rollbar.com/api/1/deploy' -d "$(cat ./post.json)"
 else
