@@ -154,6 +154,8 @@ Parcel будет следить за файлами в каталоге `bundle
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
 - `ROLLBAR_ACCESS_TOKEN` - зарегистрируйте проект в [RollBar](https://rollbar.com/) и получите токен
 - `ROLLBAR_PLACE` - укажите имя сервера для логов ошибок, например `production` или `develop`
+- `DB_URL_POSTGRESQL` - необходимо указать натройки доступа к БД postgreql вида 
+`'postgresql://username:password@localhost:5432/DB_name'`
 
 ## Цели проекта
 
