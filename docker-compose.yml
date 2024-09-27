@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/frontend/Dockerfile
+    container_name: 'star-burger-frontend'
     command: ./node_modules/.bin/parcel watch bundles-src/index.js --dist-dir bundles --public-url="./"
     volumes:
       - ./assets:/star-burger/assets
@@ -14,6 +15,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/backend/Dockerfile
+    container_name: 'star-burger-backend'
     command: >
         bash -c "python manage.py collectstatic --noinput
         && gunicorn -w 3 -b 0.0.0.0:8000 star_burger.wsgi:application"
