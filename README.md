@@ -197,6 +197,23 @@ export rollbar_token="b857e5426724409...78fd7b62f1776b"
 
 работающий сайт расположен: [https://starburger.flash-kir.ru/](https://starburger.flash-kir.ru/)
 
+### Как запустить сайт локально с помощью `docker-compose`
+
+Установите `Docker`
+Запустите сборку образов командой:
+
+```bash
+docker-compose build
+```
+
+После окончания сборки зпустие проект командой:
+
+```bash
+docker-compose up
+```
+
+Сайт запустится по адресу [http://0.0.0.0:8000/](http://0.0.0.0:8000/)
+
 ## Цели проекта
 
 Код написан в учебных целях — это урок в курсе по Python и веб-разработке на сайте [Devman](https://dvmn.org). За основу был взят код проекта [FoodCart](https://github.com/Saibharath79/FoodCart).

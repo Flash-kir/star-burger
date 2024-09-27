@@ -95,6 +95,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': 'db.sqlite3',
+#    }
     'default': dj_database_url.config(
         default=env('DB_URL_POSTGRESQL'),
         conn_max_age=600,
