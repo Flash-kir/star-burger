@@ -16,7 +16,8 @@ services:
       dockerfile: ./docker/backend/Dockerfile
     command: >
         bash -c "python manage.py collectstatic --noinput
-        && python ./manage.py runserver 0.0.0.0:8000"
+        && gunicorn -w 3 -b 0.0.0.0:8000 star_burger.wsgi:application"
+#        && python ./manage.py runserver 0.0.0.0:8000"
     env_file: ".env"
     volumes:
       - ./staticfiles:/star-burger/staticfiles
