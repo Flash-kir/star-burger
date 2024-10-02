@@ -141,10 +141,12 @@ Parcel будет следить за файлами в каталоге `bundle
 
 ## Как запустить prod-версию сайта
 
-Собрать фронтенд:
+Скопировать файлы конфигураций `postgresql` из папки `./postgres/` в папку `data_directory` из настройки `postgresql.conf` :
 
 ```sh
-./node_modules/.bin/parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
+cp /project/path/postgres/pg_hba.conf /postgres/data/directory/pg_hba.conf
+cp /project/path/postgres/pg_ident.conf /postgres/data/directory/pg_ident.conf
+cp /project/path/postgres/postgresql.conf /postgres/data/directory/postgresql.conf
 ```
 
 Настроить бэкенд: создать файл `.env` в каталоге `star_burger/` со следующими настройками:
@@ -155,7 +157,7 @@ Parcel будет следить за файлами в каталоге `bundle
 - `ROLLBAR_ACCESS_TOKEN` - зарегистрируйте проект в [RollBar](https://rollbar.com/) и получите токен. Необязательная настройка возможен запуск без указания токена.
 - `ROLLBAR_PLACE` - укажите имя сервера для логов ошибок, например `production` или `develop`
 - `DB_URL_POSTGRESQL` - необходимо указать натройки доступа к БД postgreql вида 
-`'postgresql://username:password@localhost:5432/DB_name'`
+`'postgresql://username:password@db:5432/DB_name'`
 
 создайте на сервере скрипт `deploy_star_burger.sh` с кодом
 ```sh
@@ -166,21 +168,18 @@ set -e
 trap 'LAST_COMMAND=$CURRENT_COMMAND; CURRENT_COMMAND=$BASH_COMMAND' DEBUG
 #   on error: print the failed command
 trap 'ERROR_CODE=$?; FAILED_COMMAND=$LAST_COMMAND; tput setaf 1; echo "ERROR: command \"$FAILED_COMMAND\" failed with exit code $ERROR_CODE"; put sgr0;' ERR INT TERM
-
 cd /opt/starburger/star-burger
 git pull
-source ../starburger/bin/activate
-pip install -q -r requirements.txt
-#js modules install
-npm install
-./node_modules/.bin/parcel build bundles-src/index.js --dist-dir bundles --public-url="./"
-#Django collectstatic
-python3 manage.py collectstatic --noinput
-python3 manage.py migrate
-#reload systemd services
-systemctl stop starburger.service
-systemctl start starburger.service
+
+#docker stop and remove containers
+docker-compose down -v
+#frontend container build
+docker-compose build
+#start docker containers
+docker-compose up -d
+
 systemctl reload nginx.service
+
 echo Deploy ends successful.
 git_hash=$(git rev-parse HEAD)
 echo {\"environment\": \"qa\", \"revision\": \"$git_hash\", \"rollbar_name\": \"SB\", \"local_username\": \"fiash.kir\", \"comment\": \"deployment\", \"status\": \"succeeded\"} > ./post.json
