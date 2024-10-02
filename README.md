@@ -202,13 +202,13 @@ export rollbar_token="b857e5426724409...78fd7b62f1776b"
 Запустите сборку образов командой:
 
 ```bash
-docker-compose build
+docker-compose -f ./docker-compose.dev.yml build
 ```
 
 После окончания сборки зпустие проект командой:
 
 ```bash
-docker-compose up
+docker-compose -f ./docker-compose.dev.yml up
 ```
 
 Сайт запустится по адресу [http://0.0.0.0:8000/](http://0.0.0.0:8000/)
