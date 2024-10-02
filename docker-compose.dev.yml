@@ -1,0 +1,29 @@
+version: "3.2"
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: ./docker/frontend/Dockerfile
+    container_name: 'star-burger-frontend'
+    command: ./node_modules/.bin/parcel watch bundles-src/index.js --dist-dir bundles --public-url="./"
+    volumes:
+      - ./assets:/star-burger/assets
+      - ./bundles:/star-burger/bundles
+      - ./bundles-src:/star-burger/bundles-src
+  backend:
+    build:
+      context: .
+      dockerfile: ./docker/backend/Dockerfile
+    container_name: 'star-burger-backend'
+    command: >
+        bash -c "python manage.py collectstatic --noinput
+        && gunicorn -w 3 -b 0.0.0.0:8000 star_burger.wsgi:application"
+    volumes:
+      - ./staticfiles:/star-burger/staticfiles
+      - ./assets:/star-burger/assets
+      - ./bundles:/star-burger/bundles
+    ports:  
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      - frontend
